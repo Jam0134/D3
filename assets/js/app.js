@@ -1,14 +1,15 @@
 // @TODO: YOUR CODE HERE!
-var svgWidth = 960;
-var svgHeight = 500;
+var svgWidth = 970;
+var svgHeight = 650;
 
 var margin = {
   top: 20,
   right: 40,
-  bottom: 60,
+  bottom: 100,
   left: 100
 };
 
+//Chart Height and width
 var width = svgWidth - margin.left - margin.right;
 var height = svgHeight - margin.top - margin.bottom;
 
@@ -36,11 +37,11 @@ d3.csv("assets/data/data.csv").then(function(data) {
      // Step 2: Create scale functions
     // ==============================
     var xLinearScale = d3.scaleLinear()
-      .domain(0, d3.ext(data, d => d.poverty))
+      .domain([d3.min(data, d => d.poverty), d3.extent(data, d => d.poverty)])
       .range([0, width]);
 
     var yLinearScale = d3.scaleLinear()
-      .domain( d3.extent(data, d => d.healthcare))
+      .domain([d3.min(data, d => d.healthcare), d3.extent(data, d => d.healthcare)])
       .range([height, 0]);
 
     // Step 3: Create axis functions
@@ -49,6 +50,11 @@ d3.csv("assets/data/data.csv").then(function(data) {
     var leftAxis = d3.axisLeft(yLinearScale);
 
      // Step 4: Append Axes to the chart
+      
+     xLinearScale.domain([d3.min(data, d => d.poverty) * 0.9,d3.max(data, d => d.poverty) * 0.9]);
+     yLinearScale.domain([d3.min(data, d => d.healthcare) * 0.2,d3.max(data, d => d.healthcare) * 1.1]);
+
+
     // ==============================
 
      // Create axes labels
@@ -58,12 +64,18 @@ d3.csv("assets/data/data.csv").then(function(data) {
         .attr("x", 0 - (height / 2))
         .attr("dy", "1em")
         .attr("class", "axisText")
-        .text("Number of Billboard 100 Hits");
+        .text("Poverty Percentage");
+
+        chartGroup.append("text")
+        .attr("transform", `translate(${width / 2}, ${margin.top -20})`)
+        .attr("dy", "1em")
+        .attr("class", "axisText")
+        .text("US Healthcare vs Poverty");
 
         chartGroup.append("text")
         .attr("transform", `translate(${width / 2}, ${height + margin.top + 30})`)
         .attr("class", "axisText")
-        .text("Hair Metal Band Hair Length (inches)");
+        .text("Healthcare");
 
             chartGroup.append("g")
             .attr("transform", `translate(0, ${height})`)
@@ -85,7 +97,16 @@ d3.csv("assets/data/data.csv").then(function(data) {
         // .attr("opacity", ".5");
         .attr("class", "stateCircle");
 
-    // Create Text
+        var toolTip = d3.tip()
+        .attr("class", "d3-tip")
+        .offset([80, -60])
+        .html(function (d) {
+            return (`${d.state}<br>Poverty: ${d.poverty}%<br>Healthcare: ${d.healthcare}%`);
+        });
+
+        chartGroup.call(toolTip);
+
+  
 
 
     var textGroup = chartGroup.append("g")
